@@ -12,7 +12,7 @@ require('dotenv').config()// for the doteenv
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nnefkr8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -30,8 +30,23 @@ async function run() {
     await client.connect();
 
     // collection
+    const jobsCollections = client.db("job-db").collection("jobs");
 
-    // user post
+    //get all the jobs
+    app.get('/', async(req, res) =>{
+      const result = await jobsCollections.find().toArray();
+      res.send(result);
+    })
+
+    // get job details
+    app.get('/jobs/:id', async(req, res) => {
+      const id = { _id: new ObjectId(req.params.id) };
+      const result = await jobsCollections.findOne(id);
+      res.send(result); 
+    })
+
+
+    // recruiter post
 
     // user delete (same time delete from firebase)
 
