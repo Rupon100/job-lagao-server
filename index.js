@@ -31,6 +31,7 @@ async function run() {
 
     // collection
     const jobsCollections = client.db("job-db").collection("jobs");
+     const jobsApplications = client.db("job-db").collection("job-applications");
 
     //get all the jobs
     app.get('/', async(req, res) =>{
@@ -43,6 +44,36 @@ async function run() {
       const id = { _id: new ObjectId(req.params.id) };
       const result = await jobsCollections.findOne(id);
       res.send(result); 
+    })
+
+
+    // job applications api
+    app.post('/applications', async(req, res) => {
+      const application = req.body;
+      const result = await jobsApplications.insertOne(application);
+      res.send(result);
+    });
+
+    // get applications data
+    app.get('/applications', async(req, res) => {
+      const email = req.query.email;
+      const query = {candidate: email};
+      const result = await jobsApplications.find(query).toArray();
+
+      // get data using id // try another way
+      for(const application of result){
+        console.log(application);
+        const query1 = { _id: new ObjectId(application.job_id) };
+        const job = await jobsCollections.findOne(query1)
+        if(job){
+          application.title = job.title;
+          application.location = job.location;
+          application.company_logo = job.company_logo;
+          application.category = job.category;
+        }
+      }
+
+      res.send(result);
     })
 
 
